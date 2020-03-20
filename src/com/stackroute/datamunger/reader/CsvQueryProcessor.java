@@ -1,16 +1,21 @@
 package com.stackroute.datamunger.reader;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 
 import com.stackroute.datamunger.query.DataTypeDefinitions;
 import com.stackroute.datamunger.query.Header;
 
 public class CsvQueryProcessor extends QueryProcessingEngine {
+	
+	private String fileName;
 
 	// Parameterized constructor to initialize filename
 	public CsvQueryProcessor(String fileName) throws FileNotFoundException {
-
+		this.fileName=fileName;
 	}
 
 	/*
@@ -23,9 +28,16 @@ public class CsvQueryProcessor extends QueryProcessingEngine {
 	public Header getHeader() throws IOException {
 
 		// read the first line
-
 		// populate the header object with the String array containing the header names
-		return null;
+		File file = new File(fileName);
+		FileReader fileReader = new FileReader(file);
+		BufferedReader bufferedReader = new BufferedReader(fileReader);
+		String line = bufferedReader.readLine();
+		bufferedReader.close();
+		Header head = new Header();
+		head.setHeaders(line.trim().split(","));
+		return head;
+		
 	}
 
 	/**
@@ -50,6 +62,32 @@ public class CsvQueryProcessor extends QueryProcessingEngine {
 	@Override
 	public DataTypeDefinitions getColumnType() throws IOException {
 
-		return null;
+		File file = new File("data/ipl.csv");
+		FileReader fileReader = new FileReader(file);
+		BufferedReader bufferedReader = new BufferedReader(fileReader);
+		String line1 = bufferedReader.readLine();
+		String line2 = bufferedReader.readLine();
+		bufferedReader.close();
+		DataTypeDefinitions dataType= new DataTypeDefinitions();
+		String[] header = line2.trim().split(",", line1.length());
+		String[] dataTypes = new String[header.length];
+		Integer integerData;
+		Double doubleData;
+		for (int i = 0; i < header.length; i++) {
+			try {
+				integerData = Integer.parseInt(header[i]);
+				dataTypes[i] = integerData.getClass().getName();
+			} catch (NumberFormatException e) {
+				try {
+					doubleData = Double.parseDouble(header[i]);
+					dataTypes[i] = doubleData.getClass().getName();
+				} catch (NumberFormatException ex) {
+					dataTypes[i] = header[i].getClass().getName();
+				}
+			}
+		}
+
+		dataType.setDataTypes(dataTypes);
+		return dataType;
 	}
 }
